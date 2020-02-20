@@ -1,10 +1,14 @@
 
 # genarate new GUID for the vm   
 $GUID = New-Guid
+$ISO = Get-SCISO -VMMServer localhost -ID "20067900-bd4c-4e57-bda4-7ea35dee51c1" | where {$_.Name -eq "en_windows_server_2019_x64_dvd_4cb967d8.iso"}
 
 # create % set new IO for VM
 New-SCVirtualScsiAdapter -VMMServer localhost -JobGroup $GUID -AdapterID 7 -ShareVirtualScsiAdapter $false -ScsiControllerType DefaultTypeNoType 
+
 New-SCVirtualDVDDrive -VMMServer localhost -JobGroup $GUID -Bus 1 -LUN 0 
+$VMSubnet = Get-SCVMSubnet -VMMServer localhost -Name "VM10-5-vlan0_0" | where {$_.VMNetwork.ID -eq "943f13d1-988d-45ff-9a37-4bf5849d031e"}
+$VMNetwork = Get-SCVMNetwork -VMMServer localhost -Name "VM10-5-vlan0" -ID "943f13d1-988d-45ff-9a37-4bf5849d031e"
 New-SCVirtualNetworkAdapter -VMMServer localhost -JobGroup $GUID -MACAddressType Dynamic -Synthetic -IPv4AddressType Dynamic -IPv6AddressType Dynamic 
 Set-SCVirtualCOMPort -NoAttach -VMMServer localhost -GuestPort 1 -JobGroup $GUID 
 Set-SCVirtualCOMPort -NoAttach -VMMServer localhost -GuestPort 2 -JobGroup $GUID 
