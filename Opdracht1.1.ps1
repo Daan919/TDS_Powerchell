@@ -1,20 +1,46 @@
 
 # genarate new GUID for the vm   
-$GUID = New-Guid
+$JobGroup_IO = [guid]::NewGuid().ToString()
+$JobGroup_VM = [guid]::NewGuid().ToString()
+$HW_profile = "W2019-HP1-VLAN0"
+$VM_Template = "W2019_Template_02"
+$temp_template = "Temporary Template" +[guid]::NewGuid().ToString()
+$PcName = "computernaam_4"
+$VM_name = "vm04"
+$VM_disctiption = "VM - nummer - 04"
+
+$password = ConvertTo-SecureString “Password01” -AsPlainText -Force
+$Cred = New-Object System.Management.Automation.PSCredential ("administrator", $password)
+
+
+# create en set IO VM
+New-SCVirtualScsiAdapter -VMMServer localhost -JobGroup $JobGroup_IO -AdapterID 7 -ShareVirtualScsiAdapter $false -ScsiControllerType DefaultTypeNoType 
 $ISO = Get-SCISO -VMMServer localhost -ID "20067900-bd4c-4e57-bda4-7ea35dee51c1" | where {$_.Name -eq "en_windows_server_2019_x64_dvd_4cb967d8.iso"}
-
-# create % set new IO for VM
-New-SCVirtualScsiAdapter -VMMServer localhost -JobGroup $GUID -AdapterID 7 -ShareVirtualScsiAdapter $false -ScsiControllerType DefaultTypeNoType 
-
-New-SCVirtualDVDDrive -VMMServer localhost -JobGroup $GUID -Bus 1 -LUN 0 
+New-SCVirtualDVDDrive -VMMServer localhost -JobGroup $JobGroup_IO -Bus 1 -LUN 0 -ISO $ISO 
 $VMSubnet = Get-SCVMSubnet -VMMServer localhost -Name "VM10-5-vlan0_0" | where {$_.VMNetwork.ID -eq "943f13d1-988d-45ff-9a37-4bf5849d031e"}
 $VMNetwork = Get-SCVMNetwork -VMMServer localhost -Name "VM10-5-vlan0" -ID "943f13d1-988d-45ff-9a37-4bf5849d031e"
-New-SCVirtualNetworkAdapter -VMMServer localhost -JobGroup $GUID -MACAddressType Dynamic -Synthetic -IPv4AddressType Dynamic -IPv6AddressType Dynamic 
-Set-SCVirtualCOMPort -NoAttach -VMMServer localhost -GuestPort 1 -JobGroup $GUID 
-Set-SCVirtualCOMPort -NoAttach -VMMServer localhost -GuestPort 2 -JobGroup $GUID 
-Set-SCVirtualFloppyDrive -RunAsynchronously -VMMServer localhost -NoMedia -JobGroup $GUID
+New-SCVirtualNetworkAdapter -VMMServer localhost -JobGroup $JobGroup_IO -MACAddress "00:00:00:00:00:00" -MACAddressType Static -Synthetic -EnableVMNetworkOptimization $false -EnableMACAddressSpoofing $false -EnableGuestIPNetworkVirtualizationUpdates $false -IPv4AddressType Static -IPv6AddressType Dynamic -VMSubnet $VMSubnet -VMNetwork $VMNetwork 
+Set-SCVirtualCOMPort -NoAttach -VMMServer localhost -GuestPort 1 -JobGroup $JobGroup_IO 
+Set-SCVirtualCOMPort -NoAttach -VMMServer localhost -GuestPort 2 -JobGroup $JobGroup_IO 
+Set-SCVirtualFloppyDrive -RunAsynchronously -VMMServer localhost -NoMedia -JobGroup $JobGroup_IO 
 
 
-$CPUType = Get-SCCPUType -VMMServer localhost | where {$_.Name -eq "3.60 GHz Xeon (2 MB L2 cache)"}
+$Template = Get-SCVMTemplate -VMMServer localhost -ID "852dc4b4-a6c2-4f44-bf81-9e48918fc5ae" | where {$_.Name -eq $VM_template }
+$HardwareProfile = Get-SCHardwareProfile -VMMServer localhost | where {$_.Name -eq $HW_profile}
+$OperatingSystem = Get-SCOperatingSystem -VMMServer localhost -ID "dffb90ce-abb0-4082-8764-fb08db195c05" | where {$_.Name -eq "Windows Server 2019 Standard"}
 
-New-SCHardwareProfile -VMMServer localhost -CPUType $CPUType -Name "Profile7f138022-af6a-4c39-aec8-39870992da6f" -Description "Profile used to create a VM/Template" -CPUCount 1 -MemoryMB 2048 -DynamicMemoryEnabled $false -MemoryWeight 5000 -VirtualVideoAdapterEnabled $false -CPUExpectedUtilizationPercent 20 -DiskIops 0 -CPUMaximumPercent 100 -CPUReserve 0 -NumaIsolationRequired $false -NetworkUtilizationMbps 0 -CPURelativeWeight 100 -HighlyAvailable $false -DRProtectionRequired $false -NumLock $false -BootOrder "CD", "IdeHardDrive", "PxeBoot", "Floppy" -CPULimitFunctionality $false -CPULimitForMigration $false -CheckpointType Production -Generation 1 -JobGroup $GUID
+New-SCVMTemplate -Name $temp_template -Template $Template -HardwareProfile $HardwareProfile -JobGroup $JobGroup_VM -ComputerName "comp01" -TimeZone 110  -Workgroup "WORKGROUP" -AnswerFile $null -OperatingSystem $OperatingSystem -UpdateManagementProfile $null 
+
+
+$template = Get-SCVMTemplate -All | where { $_.Name -eq $temp_template }
+$virtualMachineConfiguration = New-SCVMConfiguration -VMTemplate $template -Name $VM_name
+Write-Output $virtualMachineConfiguration
+
+$vmHost = Get-SCVMHost -ID "50fcc871-63a8-4f03-903b-8e356172f64f"
+
+Set-SCVMConfiguration -VMConfiguration $virtualMachineConfiguration -VMHost $vmHost
+Update-SCVMConfiguration -VMConfiguration $virtualMachineConfiguration
+Set-SCVMConfiguration -VMConfiguration $virtualMachineConfiguration -ComputerName $PcName
+$AllNICConfigurations = Get-SCVirtualNetworkAdapterConfiguration -VMConfiguration $virtualMachineConfiguration
+Update-SCVMConfiguration -VMConfiguration $virtualMachineConfiguration
+New-SCVirtualMachine -Name $VM_name -VMConfiguration $virtualMachineConfiguration -Description $VM_disctiption -BlockDynamicOptimization $false -JobGroup $JobGroup_VM -ReturnImmediately -StartAction "NeverAutoTurnOnVM" -StopAction "SaveVM" -LocalAdministratorCredential $Cred
