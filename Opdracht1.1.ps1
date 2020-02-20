@@ -2,18 +2,14 @@
 # genarate new GUID for the vm   
 $GUID = New-Guid
 
-
+# create % set new IO for VM
 New-SCVirtualScsiAdapter -VMMServer localhost -JobGroup $GUID -AdapterID 7 -ShareVirtualScsiAdapter $false -ScsiControllerType DefaultTypeNoType 
-
 New-SCVirtualDVDDrive -VMMServer localhost -JobGroup $GUID -Bus 1 -LUN 0 
-
 New-SCVirtualNetworkAdapter -VMMServer localhost -JobGroup $GUID -MACAddressType Dynamic -Synthetic -IPv4AddressType Dynamic -IPv6AddressType Dynamic 
-
 Set-SCVirtualCOMPort -NoAttach -VMMServer localhost -GuestPort 1 -JobGroup $GUID 
-
 Set-SCVirtualCOMPort -NoAttach -VMMServer localhost -GuestPort 2 -JobGroup $GUID 
-
 Set-SCVirtualFloppyDrive -RunAsynchronously -VMMServer localhost -NoMedia -JobGroup $GUID
+
 
 $CPUType = Get-SCCPUType -VMMServer localhost | where {$_.Name -eq "3.60 GHz Xeon (2 MB L2 cache)"}
 
