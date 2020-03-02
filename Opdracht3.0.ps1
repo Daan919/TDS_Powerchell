@@ -1,3 +1,27 @@
+Import-CSV -Path .\Bulkuitrol.csv | Write-Host "VMnaam=" + $_.VMnaam
+
+Import-CSV -Path .\Bulkuitrol.csv | ForEach-Object {Write-Host "VMnaam=" + $_.VMnaam}
+
+$temp=gc "temp.csv"
+$array=@()
+
+$temp | Foreach{
+    $elements=$_.split(",")
+    $array+= ,@($elements[0],$elements[1],$elements[2])
+}
+
+foreach($value in $array)
+{
+    write-host "EmpID =" $value[0] "and Name =" $value[1] "and Dept =" $value[2]
+}
+
+
+
+foreach($VMnaam in (Import-Csv -Path .\Bulkuitrol.csv)){
+
+    
+
+
 
 # Genarate new GUID for the VM   
 $JobGroup_IO = [guid]::NewGuid().ToString()
@@ -6,9 +30,9 @@ $JobGroup_VM = [guid]::NewGuid().ToString()
 $HW_profile = "W2019-HP1-VLAN0"
 $VM_Template = "W2019_Template_02"
 $temp_template = "Temporary Template" +[guid]::NewGuid().ToString()
-$PcName = "computernaam_4"
-$VM_name = "vm04"
-$VM_disctiption = "VM - nummer - 04"
+$PcName = $VMnaam.CompNaam
+$VM_name = $VMnaam.VMnaam
+$VM_disctiption = $VMnaam.VMdesc
 
 # Create administrator credentials
 $password = ConvertTo-SecureString “Password01” -AsPlainText -Force
@@ -48,3 +72,4 @@ Set-SCVMConfiguration -VMConfiguration $virtualMachineConfiguration -ComputerNam
 $AllNICConfigurations = Get-SCVirtualNetworkAdapterConfiguration -VMConfiguration $virtualMachineConfiguration
 Update-SCVMConfiguration -VMConfiguration $virtualMachineConfiguration
 New-SCVirtualMachine -Name $VM_name -VMConfiguration $virtualMachineConfiguration -Description $VM_disctiption -BlockDynamicOptimization $false -JobGroup $JobGroup_VM -ReturnImmediately -StartAction "NeverAutoTurnOnVM" -StopAction "SaveVM" -LocalAdministratorCredential $Cred
+}
