@@ -3,14 +3,14 @@
 $JobGroup_IO = [guid]::NewGuid().ToString()
 $JobGroup_VM = [guid]::NewGuid().ToString()
 # VM variables 
-$HW_profile = "W2019-HP1-VLAN0"
-$VM_Template = "W2019_Template_02"
-$temp_template = "Temporary Template" +[guid]::NewGuid().ToString()
-$PcName = "computernaam_4"
-$VM_name = "vm04"
-$VM_disctiption = "VM - nummer - 04"
+$HW_profile = "W2019-HP1-VLAN0" <#opdracht 1.3#>
+$VM_Template = "W2019_Template_02" <#opdracht 1.3#>
+$temp_template = "Temporary Template" +[guid]::NewGuid().ToString() <#opdracht 1.3#>
+$PcName = "computernaam_4" <#opdracht 1.1#>
+$VM_name = "vm04" <#opdracht 1.1#>
+$VM_disctiption = "VM - nummer - 04" <#opdracht 1.1#>
 
-# Create administrator credentials
+# Create administrator credentials (opdracht 1.2)
 $password = ConvertTo-SecureString “Password01” -AsPlainText -Force
 $Cred = New-Object System.Management.Automation.PSCredential ("administrator", $password)
 
