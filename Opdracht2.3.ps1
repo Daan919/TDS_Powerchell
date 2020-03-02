@@ -5,4 +5,7 @@ $a = Get-SCVirtualMachine | Select-Object -Property Name  , Memory , Status , Ow
 
 $b = get-vm | Get-SCVirtualNetworkAdapter | Select-Object -Property Name , IPv4Addresses , IPv6Addresses 
 
-Join-Object -Left $b -Right $a -LeftJoinProperty 'Name' -RightJoinProperty 'Name'  | Format-Table
+$c = Join-Object -Left $b -Right $a -LeftJoinProperty 'Name' -RightJoinProperty 'Name'  
+
+$c | Format-Table
+$c | ConvertTo-Json
