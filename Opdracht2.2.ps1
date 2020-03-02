@@ -1,0 +1,1 @@
+Get-SCHardwareProfile | Select-Object -Property Name , Description | ConvertTo-Json 
