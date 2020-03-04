@@ -18,7 +18,7 @@
 
 $virtualmachines = Import-Csv -Path .\Bulkuitrol.csv
 foreach($VM in $virtualmachines){
-
+    
     # Genarate new GUID for the VM   
     $JobGroup_IO = [guid]::NewGuid().ToString()
     $JobGroup_VM = [guid]::NewGuid().ToString()
@@ -30,6 +30,9 @@ foreach($VM in $virtualmachines){
     $VM_name = $VM.VMnaam
     $VM_disctiption = $VM.VMdesc
 
+    $PcName
+    $VM_name
+    $VM_disctiption
     # Create administrator credentials
     $password = ConvertTo-SecureString “Password01” -AsPlainText -Force
     $Cred = New-Object System.Management.Automation.PSCredential ("administrator", $password)
