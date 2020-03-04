@@ -30,9 +30,6 @@ foreach($VM in $virtualmachines){
     $VM_name = $VM.VMnaam
     $VM_disctiption = $VM.VMdesc
 
-    $PcName
-    $VM_name
-    $VM_disctiption
     # Create administrator credentials
     $password = ConvertTo-SecureString “Password01” -AsPlainText -Force
     $Cred = New-Object System.Management.Automation.PSCredential ("administrator", $password)
