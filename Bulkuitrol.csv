@@ -1,4 +1,4 @@
-VMnaam,VMdesc,CompNaam
-"VMx01","VM nummer 1","W2019-001"
-"VMx02","VM nummer 2","W2019-002"
-"VMx03","VM nummer 3","W2019-003"
+VMnaam,VMdesc,CompNaam,Password,Template,HardwareProfile
+"VMx01","VM nummer 1","W2019-001","Passowrd01@","W2019_Template_02","W2019-HP1-VLAN0"
+"VMx02","VM nummer 2","W2019-002","Passowrd02@","W2019_Template_04","W2019-HP1-VLAN0"
+"VMx03","VM nummer 3","W2019-003","Passowrd03@","W2019_Template_04","W2019-HP1-VLAN0"
